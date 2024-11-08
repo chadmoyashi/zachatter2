@@ -145,13 +145,16 @@ function App() {
         overlayClassName="overlay"
       >
         <h2>Post a Photo</h2>
-        <input type="file" onChange={handleFileChange} />
+        <label htmlFor="file-input" className="file-input-button">
+          {file ? 'Upload a Different Photo' : 'Upload Photo'}
+        </label>
+        <input type="file" id="file-input" onChange={handleFileChange} />
         <textarea
           placeholder="Add a message..."
           value={message}
           onChange={handleMessageChange}
           rows="4"
-          style={{ width: '100%' }}
+          style={{ width: '100%', marginTop: '15px' }}
         />
         <button onClick={handlePost} className="post-button">Post</button>
         <button onClick={closeModal} className="cancel-button">Cancel</button>
