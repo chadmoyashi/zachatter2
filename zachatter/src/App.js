@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Map from './components/Map';
 import { AiOutlinePlus } from 'react-icons/ai';
 import Modal from 'react-modal';
@@ -20,8 +20,16 @@ function App() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [uploadStatus, setUploadStatus] = useState(''); // Track upload status
+  const mapRef = useRef(null); // Reference for the map instance
+  const fixedZoomLevel = 18.5; // Set your desired zoom level here
 
-  const openModal = () => setIsModalOpen(true);
+  const openModal = () => {
+    if (mapRef.current) {
+      // Lock the zoom level before opening the modal
+      mapRef.current.setZoom(fixedZoomLevel);
+    }
+    setIsModalOpen(true);
+  };
 
   const closeModal = () => {
     setIsModalOpen(false);
@@ -29,6 +37,7 @@ function App() {
     setMessage('');
     setUploadStatus(''); // Clear upload status
     setSelectedLocation(null);
+    resetMap(); // Reset map view after closing modal
   };
 
   const handleFileChange = (e) => {
@@ -65,8 +74,17 @@ function App() {
       });
 
       closeModal();
+      resetMap(); // Ensure map is reset after posting
     } catch (error) {
       console.error('Error posting:', error);
+    }
+  };
+
+  const resetMap = () => {
+    // Ensures the map resets to its initial zoom and center after modal actions
+    if (mapRef.current && userLocation) {
+      mapRef.current.setZoom(fixedZoomLevel); // Set the map back to the desired zoom level
+      mapRef.current.setCenter(userLocation); // Center on user location
     }
   };
 
@@ -120,6 +138,27 @@ function App() {
     return R * c;
   };
 
+  useEffect(() => {
+    // Detect when the keyboard opens or closes
+    const handleFocusIn = () => {
+      // Adjust map when the keyboard opens
+      setTimeout(resetMap, 100); // Adjust delay if necessary
+    };
+
+    const handleFocusOut = () => {
+      // Reset map when the keyboard closes
+      setTimeout(resetMap, 100);
+    };
+
+    window.addEventListener('focusin', handleFocusIn);
+    window.addEventListener('focusout', handleFocusOut);
+
+    return () => {
+      window.removeEventListener('focusin', handleFocusIn);
+      window.removeEventListener('focusout', handleFocusOut);
+    };
+  }, []);
+
   return (
     <div className="App">
       <div className="logo">Zachatter</div>
@@ -135,10 +174,11 @@ function App() {
             setUserLocation(location);
             if (location) setPreviousLocation({ latitude: location[1], longitude: location[0] });
           }}
+          mapRef={mapRef} // Pass mapRef to Map component
         />
       </div>
       <button className="fab" onClick={openModal}>
-        <AiOutlinePlus size={24} color="white" />
+        <AiOutlinePlus size={30} color="white" />
       </button>
 
       <Modal

@@ -1,9 +1,18 @@
 /* src/App.css */
 @import 'mapbox-gl/dist/mapbox-gl.css';
 
+html, body {
+  overflow: hidden; /* Prevents scrolling */
+  height: 100%;
+  margin: 0;
+  touch-action: none; /* Prevents default touch actions */
+}
+
 .App {
   font-family: Arial, sans-serif;
   text-align: center;
+  overflow: hidden; /* Ensures no scrollbars appear */
+  height: 100vh; /* Forces full viewport height */
 }
 
 .map-container {
@@ -13,7 +22,6 @@
   overflow: hidden;
 }
 
-/* Floating Logo Styling */
 .logo {
   position: absolute;
   top: 15px;
@@ -30,7 +38,6 @@
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Floating Action Button (FAB) Styling */
 .fab {
   position: fixed;
   bottom: 20px;
@@ -44,7 +51,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
+  font-size: 32px;
   cursor: pointer;
   box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.3);
 }
@@ -54,7 +61,6 @@
   color: #8a2be2;
 }
 
-/* Modal Overlay and Content Styling */
 .overlay {
   background: rgba(0, 0, 0, 0.5);
   position: fixed;
@@ -72,17 +78,15 @@
   transform: translate(-50%, -50%);
   background: white;
   padding: 20px;
-  width: 90%;
-  max-width: 300px;
+  width: 300px;
   border-radius: 8px;
   outline: none;
   z-index: 11;
 }
 
-/* File Input Button Styling */
 .file-input-button {
   display: inline-block;
-  padding: 10px 20px;
+  padding: 8px 16px;
   border-radius: 30px;
   background-color: #3a3a3a;
   color: white;
@@ -102,13 +106,6 @@ input[type="file"] {
   display: none;
 }
 
-.upload-status {
-  color: #8a2be2; /* Purple color for status */
-  font-size: 14px;
-  margin-top: 5px;
-}
-
-/* Post and Cancel Button Styling */
 .post-button, .cancel-button {
   display: inline-block;
   padding: 10px 20px;
@@ -139,14 +136,20 @@ input[type="file"] {
   background-color: #575757;
 }
 
-/* Adjustments for Text Area inside Modal */
-.message-input {
+textarea.message-input {
   width: 100%;
   border-radius: 8px;
   padding: 10px;
-  margin-top: 15px;
+  margin-top: 10px;
   border: 1px solid #ccc;
   font-size: 14px;
   resize: vertical;
   box-sizing: border-box;
+
+}
+
+.upload-status {
+  color: #8a2be2;
+  font-size: 14px;
+  margin-top: 5px;
 }
