@@ -19,6 +19,7 @@ function App() {
   const [allPosts, setAllPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
+  const [uploadStatus, setUploadStatus] = useState(''); // Track upload status
 
   const openModal = () => setIsModalOpen(true);
 
@@ -26,14 +27,17 @@ function App() {
     setIsModalOpen(false);
     setFile(null);
     setMessage('');
+    setUploadStatus(''); // Clear upload status
     setSelectedLocation(null);
   };
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
+      setUploadStatus('Uploaded!'); // Set upload status when file is selected
     } else {
       console.error('No file selected');
+      setUploadStatus('');
     }
   };
 
@@ -149,12 +153,13 @@ function App() {
           {file ? 'Upload a Different Photo' : 'Upload Photo'}
         </label>
         <input type="file" id="file-input" onChange={handleFileChange} />
+        {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
         <textarea
           placeholder="Add a message..."
           value={message}
           onChange={handleMessageChange}
           rows="4"
-          style={{ width: '100%', marginTop: '15px' }}
+          className="message-input"
         />
         <button onClick={handlePost} className="post-button">Post</button>
         <button onClick={closeModal} className="cancel-button">Cancel</button>
