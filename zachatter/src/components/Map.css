@@ -2,6 +2,6 @@
 #map {
     width: 100%;
     height: 100vh; /* Full viewport height */
-    margin: 10px 0;
+    touch-action: manipulation; /* Support touch for mobile interactions */
   }
   

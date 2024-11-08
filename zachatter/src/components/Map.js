@@ -1,3 +1,4 @@
+// src/components/Map.js
 import React, { useRef, useEffect, useState } from 'react';
 import mapboxgl from 'mapbox-gl';
 import Modal from 'react-modal';
@@ -10,8 +11,9 @@ Modal.setAppElement('#root');
 const Map = ({ onLocationSelect, posts, setUserLocation }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
-  const [selectedPost, setSelectedPost] = useState(null); // To track the clicked post
-  const userMarkerRef = useRef(null); // Store the user's marker for updating position
+  const [selectedPost, setSelectedPost] = useState(null);
+  const userMarkerRef = useRef(null);
+  const lastUpdateTimeRef = useRef(0);
 
   useEffect(() => {
     if (navigator.geolocation && mapContainerRef.current && !mapRef.current) {
@@ -20,7 +22,7 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
           const { latitude, longitude } = position.coords;
           setUserLocation([longitude, latitude]);
 
-          // Initialize Mapbox map
+          // Initialize Mapbox map, centering on user's location
           mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current,
             style: 'mapbox://styles/mapbox/dark-v10',
@@ -29,48 +31,68 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
             pitch: 60,
             bearing: 0,
             dragPan: false,
+            dragRotate: true,
             pitchWithRotate: false,
+            scrollZoom: false,
+            doubleClickZoom: false,
+            touchZoomRotate: false // Disable pinch zoom and rotation gestures
           });
 
-          // Disable zooming
-          mapRef.current.scrollZoom.disable();
-          mapRef.current.doubleClickZoom.disable();
-          mapRef.current.boxZoom.disable();
-          mapRef.current.touchZoomRotate.disable();
+          // Keep user location at the center and prevent panning
+          mapRef.current.on('drag', () => {
+            mapRef.current.setCenter([longitude, latitude]);
+          });
 
-          // Add a red marker for the user's location
+          // Add a marker at the user's current location
           userMarkerRef.current = new mapboxgl.Marker({ color: 'red' })
             .setLngLat([longitude, latitude])
             .addTo(mapRef.current);
 
-          // Listen for map clicks to select a location
+          // Watch user location with 30-second interval for updates
+          navigator.geolocation.watchPosition(
+            (position) => {
+              const currentTime = Date.now();
+              if (currentTime - lastUpdateTimeRef.current >= 30000) { // 30 seconds
+                const { latitude, longitude } = position.coords;
+                setUserLocation([longitude, latitude]);
+                mapRef.current.setCenter([longitude, latitude]);
+                userMarkerRef.current.setLngLat([longitude, latitude]);
+                lastUpdateTimeRef.current = currentTime;
+              }
+            },
+            (error) => console.error("Error watching location:", error),
+            { enableHighAccuracy: true, maximumAge: 30000, timeout: 30000 }
+          );
+
+          // Custom handling for single-finger rotation
+          let startX = null;
+
+          mapRef.current.on('touchstart', (e) => {
+            if (e.originalEvent.touches.length === 1) {
+              startX = e.originalEvent.touches[0].clientX;
+            }
+          });
+
+          mapRef.current.on('touchmove', (e) => {
+            if (startX !== null && e.originalEvent.touches.length === 1) {
+              const currentX = e.originalEvent.touches[0].clientX;
+              const rotationChange = (currentX - startX) * 0.3; // Increased sensitivity for quicker rotation
+              mapRef.current.setBearing(mapRef.current.getBearing() - rotationChange);
+              startX = currentX;
+            }
+          });
+
+          mapRef.current.on('touchend', () => {
+            startX = null;
+          });
+
+          // Map click event for selecting a location
           mapRef.current.on('click', (event) => {
             const { lng, lat } = event.lngLat;
             onLocationSelect({ longitude: lng, latitude: lat });
           });
-
-          // Watch user's movement and keep map centered
-          navigator.geolocation.watchPosition(
-            (position) => {
-              const { latitude, longitude } = position.coords;
-              setUserLocation([longitude, latitude]);
-
-              if (mapRef.current) {
-                mapRef.current.setCenter([longitude, latitude]);
-              }
-              if (userMarkerRef.current) {
-                userMarkerRef.current.setLngLat([longitude, latitude]);
-              }
-            },
-            (error) => {
-              console.error("Error watching user location:", error);
-            },
-            { enableHighAccuracy: true }
-          );
         },
-        (error) => {
-          console.error("Error getting initial location:", error);
-        }
+        (error) => console.error("Error getting initial location:", error)
       );
     }
   }, [onLocationSelect, setUserLocation]);
@@ -82,12 +104,12 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
         if (post.location) {
           const { latitude, longitude } = post.location;
 
-          const marker = new mapboxgl.Marker({ color: 'blue' })
+          const marker = new mapboxgl.Marker({ color: 'purple' })
             .setLngLat([longitude, latitude])
             .addTo(mapRef.current);
 
           marker.getElement().addEventListener('click', () => {
-            setSelectedPost(post); // Open modal with post details
+            setSelectedPost(post);
           });
         }
       });
@@ -96,16 +118,15 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
 
   const calculateTimeAgo = (createdAt) => {
     const now = new Date();
-    const postTime = new Date(createdAt.seconds * 1000); // Convert Firestore timestamp to Date
-    const diffMinutes = Math.floor((now - postTime) / (1000 * 60)); // Difference in minutes
+    const postTime = new Date(createdAt.seconds * 1000);
+    const diffMinutes = Math.floor((now - postTime) / (1000 * 60));
     return diffMinutes;
   };
 
   return (
     <div>
-      <div ref={mapContainerRef} style={{ width: '100%', height: '100vh' }} />
+      <div ref={mapContainerRef} id="map" />
 
-      {/* Modal for displaying post details */}
       {selectedPost && (
         <Modal
           isOpen={!!selectedPost}
