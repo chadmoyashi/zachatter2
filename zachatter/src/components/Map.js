@@ -43,8 +43,10 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
             mapRef.current.setCenter([longitude, latitude]);
           });
 
-          // Add a marker at the user's current location
-          userMarkerRef.current = new mapboxgl.Marker({ color: 'red' })
+          // Add a larger, white marker at the user's current location
+          const el = document.createElement('div');
+          el.className = 'user-location-marker';
+          userMarkerRef.current = new mapboxgl.Marker(el)
             .setLngLat([longitude, latitude])
             .addTo(mapRef.current);
 
@@ -76,8 +78,8 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
           mapRef.current.on('touchmove', (e) => {
             if (startX !== null && e.originalEvent.touches.length === 1) {
               const currentX = e.originalEvent.touches[0].clientX;
-              const rotationChange = (currentX - startX) * 0.3; // Increased sensitivity for quicker rotation
-              mapRef.current.setBearing(mapRef.current.getBearing() - rotationChange);
+              const rotationChange = (startX - currentX) * 0.3 * -1; // Reverse direction for clockwise rotation
+              mapRef.current.setBearing(mapRef.current.getBearing() + rotationChange);
               startX = currentX;
             }
           });
