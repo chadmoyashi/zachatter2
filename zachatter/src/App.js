@@ -55,19 +55,23 @@ function App() {
 
   const handlePost = async () => {
     const locationToPost = selectedLocation || previousLocation;
-    if (!file || !message || !locationToPost) {
-      console.error('Missing file, message, or location');
+    if (!message || !locationToPost) {
+      console.error('Missing message or location');
       return;
     }
 
     try {
-      const fileRef = ref(storage, `photos/${file.name}`);
-      await uploadBytes(fileRef, file);
-      const photoURL = await getDownloadURL(fileRef);
+      let photoURL = null;
+
+      if (file) {
+        const fileRef = ref(storage, `photos/${file.name}`);
+        await uploadBytes(fileRef, file);
+        photoURL = await getDownloadURL(fileRef);
+      }
 
       await addDoc(collection(db, 'posts'), {
         message,
-        photoURL,
+        photoURL, // Optional: Null if no image is uploaded
         location: locationToPost,
         createdAt: Timestamp.now(),
         isEventBooth, // Include checkbox value
