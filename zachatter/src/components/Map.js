@@ -8,9 +8,8 @@ mapboxgl.accessToken = "pk.eyJ1Ijoia2Vucm9veWFtYSIsImEiOiJjbTM4M28wMG0wbTdtMmtwd
 
 Modal.setAppElement('#root');
 
-const Map = ({ onLocationSelect, posts, setUserLocation }) => {
+const Map = ({ onLocationSelect, posts, setUserLocation, mapRef }) => {
   const mapContainerRef = useRef(null);
-  const mapRef = useRef(null);
   const [selectedPost, setSelectedPost] = useState(null);
   const userMarkerRef = useRef(null);
   const lastUpdateTimeRef = useRef(0);
@@ -35,7 +34,7 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
             pitchWithRotate: false,
             scrollZoom: false,
             doubleClickZoom: false,
-            touchZoomRotate: false // Disable pinch zoom and rotation gestures
+            touchZoomRotate: false, // Disable pinch zoom and rotation gestures
           });
 
           // Keep user location at the center and prevent panning
@@ -97,7 +96,7 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
         (error) => console.error("Error getting initial location:", error)
       );
     }
-  }, [onLocationSelect, setUserLocation]);
+  }, [onLocationSelect, setUserLocation, mapRef]);
 
   // Add markers for posts
   useEffect(() => {
@@ -106,7 +105,8 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
         if (post.location) {
           const { latitude, longitude } = post.location;
 
-          const marker = new mapboxgl.Marker({ color: 'purple' })
+          const markerColor = post.isEventBooth ? 'yellow' : 'purple'; // Determine marker color
+          const marker = new mapboxgl.Marker({ color: markerColor })
             .setLngLat([longitude, latitude])
             .addTo(mapRef.current);
 
@@ -116,7 +116,7 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
         }
       });
     }
-  }, [posts]);
+  }, [posts, mapRef]);
 
   const calculateTimeAgo = (createdAt) => {
     const now = new Date();

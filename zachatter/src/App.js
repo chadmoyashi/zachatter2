@@ -21,8 +21,9 @@ function App() {
   const [userLocation, setUserLocation] = useState(null);
   const [uploadStatus, setUploadStatus] = useState(''); // Track upload status
   const [showIntroModal, setShowIntroModal] = useState(true); // Track visibility of the intro modal
-  const mapRef = useRef(null); // Reference for the map instance
-  const fixedZoomLevel = 18.5; // Set your desired zoom level here
+  const [isEventBooth, setIsEventBooth] = useState(false); // Checkbox state
+  const mapRef = useRef(null);
+  const fixedZoomLevel = 18.5;
 
   const openModal = () => {
     if (mapRef.current) {
@@ -37,6 +38,7 @@ function App() {
     setMessage('');
     setUploadStatus('');
     setSelectedLocation(null);
+    setIsEventBooth(false); // Reset checkbox
     resetMap();
   };
 
@@ -45,7 +47,6 @@ function App() {
       setFile(e.target.files[0]);
       setUploadStatus('Uploaded!');
     } else {
-      console.error('No file selected');
       setUploadStatus('');
     }
   };
@@ -69,6 +70,7 @@ function App() {
         photoURL,
         location: locationToPost,
         createdAt: Timestamp.now(),
+        isEventBooth, // Include checkbox value
       });
 
       closeModal();
@@ -187,7 +189,6 @@ function App() {
             私たちはもっと人間味ある社会を目指しています。
             <br />
             他者への配慮と温かい心をもって投稿してください！
-            <br />
           </p>
           <button
             className="intro-close-button"
@@ -218,6 +219,15 @@ function App() {
           rows="4"
           className="message-input"
         />
+        <div className="checkbox-container">
+          <input
+            type="checkbox"
+            id="event-booth-checkbox"
+            checked={isEventBooth}
+            onChange={(e) => setIsEventBooth(e.target.checked)}
+          />
+          <label htmlFor="event-booth-checkbox">店舗またはイベントを運営しています</label>
+        </div>
         <button onClick={handlePost} className="post-button">投稿</button>
         <button onClick={closeModal} className="cancel-button">戻る</button>
       </Modal>

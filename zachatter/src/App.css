@@ -189,3 +189,21 @@ textarea.message-input {
 .intro-close-button:hover {
   background-color: #7a26d2;
 }
+
+.checkbox-container {
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+}
+
+.checkbox-container label {
+  margin-left: 10px;
+  font-size: 14px;
+  color: #333;
+}
+
+.checkbox-container input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+}
