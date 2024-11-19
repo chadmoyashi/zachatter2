@@ -20,12 +20,12 @@ function App() {
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [uploadStatus, setUploadStatus] = useState(''); // Track upload status
+  const [showIntroModal, setShowIntroModal] = useState(true); // Track visibility of the intro modal
   const mapRef = useRef(null); // Reference for the map instance
   const fixedZoomLevel = 18.5; // Set your desired zoom level here
 
   const openModal = () => {
     if (mapRef.current) {
-      // Lock the zoom level before opening the modal
       mapRef.current.setZoom(fixedZoomLevel);
     }
     setIsModalOpen(true);
@@ -35,15 +35,15 @@ function App() {
     setIsModalOpen(false);
     setFile(null);
     setMessage('');
-    setUploadStatus(''); // Clear upload status
+    setUploadStatus('');
     setSelectedLocation(null);
-    resetMap(); // Reset map view after closing modal
+    resetMap();
   };
 
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
-      setUploadStatus('Uploaded!'); // Set upload status when file is selected
+      setUploadStatus('Uploaded!');
     } else {
       console.error('No file selected');
       setUploadStatus('');
@@ -54,8 +54,6 @@ function App() {
 
   const handlePost = async () => {
     const locationToPost = selectedLocation || previousLocation;
-    console.log('Posting with location:', locationToPost);
-
     if (!file || !message || !locationToPost) {
       console.error('Missing file, message, or location');
       return;
@@ -74,17 +72,16 @@ function App() {
       });
 
       closeModal();
-      resetMap(); // Ensure map is reset after posting
+      resetMap();
     } catch (error) {
       console.error('Error posting:', error);
     }
   };
 
   const resetMap = () => {
-    // Ensures the map resets to its initial zoom and center after modal actions
     if (mapRef.current && userLocation) {
-      mapRef.current.setZoom(fixedZoomLevel); // Set the map back to the desired zoom level
-      mapRef.current.setCenter(userLocation); // Center on user location
+      mapRef.current.setZoom(fixedZoomLevel);
+      mapRef.current.setCenter(userLocation);
     }
   };
 
@@ -105,7 +102,7 @@ function App() {
       const postTime = post.createdAt?.toDate();
       const timeDiff = (now - postTime) / (1000 * 60);
 
-      if (timeDiff > 30) return false;
+      if (timeDiff > 60) return false;
 
       const distance = calculateDistance(
         userLocation[1],
@@ -138,34 +135,12 @@ function App() {
     return R * c;
   };
 
-  useEffect(() => {
-    // Detect when the keyboard opens or closes
-    const handleFocusIn = () => {
-      // Adjust map when the keyboard opens
-      setTimeout(resetMap, 100); // Adjust delay if necessary
-    };
-
-    const handleFocusOut = () => {
-      // Reset map when the keyboard closes
-      setTimeout(resetMap, 100);
-    };
-
-    window.addEventListener('focusin', handleFocusIn);
-    window.addEventListener('focusout', handleFocusOut);
-
-    return () => {
-      window.removeEventListener('focusin', handleFocusIn);
-      window.removeEventListener('focusout', handleFocusOut);
-    };
-  }, []);
-
   return (
     <div className="App">
       <div className="logo">Zachatter</div>
       <div className="map-container">
         <Map
           onLocationSelect={(location) => {
-            console.log('Location Selected in App:', location);
             setSelectedLocation(location);
             setPreviousLocation(location);
           }}
@@ -174,12 +149,54 @@ function App() {
             setUserLocation(location);
             if (location) setPreviousLocation({ latitude: location[1], longitude: location[0] });
           }}
-          mapRef={mapRef} // Pass mapRef to Map component
+          mapRef={mapRef}
         />
       </div>
       <button className="fab" onClick={openModal}>
         <AiOutlinePlus size={30} color="white" />
       </button>
+
+      {/* Intro Modal */}
+      {showIntroModal && (
+        <Modal
+          isOpen={showIntroModal}
+          onRequestClose={() => setShowIntroModal(false)}
+          contentLabel="Introduction"
+          className="intro-modal"
+          overlayClassName="overlay"
+        >
+          <h2>NFマップは</h2>
+          <p>
+            現在地に関する情報を投稿、閲覧できるマップです
+            <br />
+            1時間おきに投稿が消えるので、リアルタイムの情報を知ることができます
+          </p>
+          <p>
+            端にある店舗やパフォーマンスなど、見つけにくい情報により一層スポットライトがあたるので、告知に最適です
+          </p>
+          <p>
+            NF期間中、公式Instagramで
+            <br />
+            ・各日、合計10投稿してくれた店舗を全力で告知します
+            <br />
+            ・毎日、その日上がったユニークな写真を３枚選んで発表します
+            <br />
+            お楽しみに！
+          </p>
+          <p>
+            私たちはもっと人間味ある社会を目指しています。
+            <br />
+            他者への配慮と温かい心をもって投稿してください！
+            <br />
+          </p>
+          <button
+            className="intro-close-button"
+            onClick={() => setShowIntroModal(false)}
+          >
+            Let's Start!
+          </button>
+        </Modal>
+      )}
 
       <Modal
         isOpen={isModalOpen}
@@ -188,21 +205,21 @@ function App() {
         className="modal"
         overlayClassName="overlay"
       >
-        <h2>Post a Photo</h2>
+        <h2>メッセージを投稿する</h2>
         <label htmlFor="file-input" className="file-input-button">
-          {file ? 'Upload a Different Photo' : 'Upload Photo'}
+          {file ? '別の写真をアップロード' : '写真をアップロード'}
         </label>
         <input type="file" id="file-input" onChange={handleFileChange} />
         {uploadStatus && <p className="upload-status">{uploadStatus}</p>}
         <textarea
-          placeholder="Add a message..."
+          placeholder="メッセージを入力してください"
           value={message}
           onChange={handleMessageChange}
           rows="4"
           className="message-input"
         />
-        <button onClick={handlePost} className="post-button">Post</button>
-        <button onClick={closeModal} className="cancel-button">Cancel</button>
+        <button onClick={handlePost} className="post-button">投稿</button>
+        <button onClick={closeModal} className="cancel-button">戻る</button>
       </Modal>
     </div>
   );

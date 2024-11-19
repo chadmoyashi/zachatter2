@@ -153,3 +153,39 @@ textarea.message-input {
   font-size: 14px;
   margin-top: 5px;
 }
+
+/* Intro Modal Styling */
+.intro-modal {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 20px;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 8px;
+  outline: none;
+  z-index: 11;
+  text-align: center;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.intro-close-button {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  text-align: center;
+  margin-top: 20px;
+  border: none;
+  transition: background-color 0.3s;
+  background-color: #8a2be2; /* Match theme color */
+  color: white;
+}
+
+.intro-close-button:hover {
+  background-color: #7a26d2;
+}

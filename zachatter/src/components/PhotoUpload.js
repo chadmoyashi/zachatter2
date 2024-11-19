@@ -23,7 +23,7 @@ const PhotoUpload = ({ selectedLocation }) => {
   return (
     <div>
       <input type="file" onChange={handleFileChange} />
-      <button onClick={handleUpload}>Upload Photo</button>
+      <button onClick={handleUpload}>写真をアップロード</button>
       {photoURL && <img src={photoURL} alt="Uploaded" style={{ width: "100px", height: "100px" }} />}
     </div>
   );

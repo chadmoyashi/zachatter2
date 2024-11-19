@@ -137,15 +137,15 @@ const Map = ({ onLocationSelect, posts, setUserLocation }) => {
           className="modal"
           overlayClassName="overlay"
         >
-          <h2>Posted {calculateTimeAgo(selectedPost.createdAt)} Minutes Ago</h2>
-          <p><strong>Message:</strong> {selectedPost.message}</p>
           <img
             src={selectedPost.photoURL}
             alt="Post"
             style={{ width: '100%', maxHeight: '300px', objectFit: 'cover' }}
           />
+          <h2>{calculateTimeAgo(selectedPost.createdAt)}分前に投稿</h2>
+          <p>{selectedPost.message}</p>
           <button onClick={() => setSelectedPost(null)} className="close-button">
-            Close
+            閉じる
           </button>
         </Modal>
       )}
