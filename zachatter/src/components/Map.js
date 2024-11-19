@@ -24,7 +24,7 @@ const Map = ({ onLocationSelect, posts, setUserLocation, mapRef }) => {
           // Initialize Mapbox map, centering on user's location
           mapRef.current = new mapboxgl.Map({
             container: mapContainerRef.current,
-            style: 'mapbox://styles/mapbox/dark-v10',
+            style: 'mapbox://styles/mapbox/dark-v10', // Base style
             center: [longitude, latitude],
             zoom: 18.5,
             pitch: 60,
@@ -35,6 +35,14 @@ const Map = ({ onLocationSelect, posts, setUserLocation, mapRef }) => {
             scrollZoom: false,
             doubleClickZoom: false,
             touchZoomRotate: false, // Disable pinch zoom and rotation gestures
+          });
+
+          // Apply localization for Japanese
+          mapRef.current.on('style.load', () => {
+            mapRef.current.setLayoutProperty('country-label', 'text-field', [
+              'get',
+              'name_ja',
+            ]);
           });
 
           // Keep user location at the center and prevent panning
