@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Map from './components/Map';
 import { AiOutlinePlus } from 'react-icons/ai';
+import { MdHelpOutline } from 'react-icons/md';
 import Modal from 'react-modal';
 import { db, storage } from './firebaseConfig';
 import { collection, addDoc, onSnapshot, Timestamp } from 'firebase/firestore';
@@ -14,14 +15,16 @@ function App() {
   const [selectedLocation, setSelectedLocation] = useState(null);
   const [previousLocation, setPreviousLocation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [helpPage, setHelpPage] = useState(0); // Track the current help page
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
   const [allPosts, setAllPosts] = useState([]);
   const [filteredPosts, setFilteredPosts] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
-  const [uploadStatus, setUploadStatus] = useState(''); // Track upload status
-  const [showIntroModal, setShowIntroModal] = useState(true); // Track visibility of the intro modal
-  const [isEventBooth, setIsEventBooth] = useState(false); // Checkbox state
+  const [uploadStatus, setUploadStatus] = useState('');
+  const [showIntroModal, setShowIntroModal] = useState(true);
+  const [isEventBooth, setIsEventBooth] = useState(false);
   const mapRef = useRef(null);
   const fixedZoomLevel = 18.5;
 
@@ -38,7 +41,7 @@ function App() {
     setMessage('');
     setUploadStatus('');
     setSelectedLocation(null);
-    setIsEventBooth(false); // Reset checkbox
+    setIsEventBooth(false);
     resetMap();
   };
 
@@ -71,10 +74,10 @@ function App() {
 
       await addDoc(collection(db, 'posts'), {
         message,
-        photoURL, // Optional: Null if no image is uploaded
+        photoURL,
         location: locationToPost,
         createdAt: Timestamp.now(),
-        isEventBooth, // Include checkbox value
+        isEventBooth,
       });
 
       closeModal();
@@ -141,6 +144,15 @@ function App() {
     return R * c;
   };
 
+  const handleHelpClose = () => {
+    setHelpPage(0);
+    setIsHelpModalOpen(false);
+  };
+
+  const goToNextHelpPage = () => {
+    setHelpPage((prev) => (prev + 1) % 2); // Cycles between page 0 and 1
+  };
+
   return (
     <div className="App">
       <div className="logo">Zachatter</div>
@@ -161,6 +173,47 @@ function App() {
       <button className="fab" onClick={openModal}>
         <AiOutlinePlus size={30} color="white" />
       </button>
+
+      {/* Help Button */}
+      <button
+        className="help-button"
+        onClick={() => setIsHelpModalOpen(true)}
+      >
+        <MdHelpOutline size={60} color="white" />
+      </button>
+
+      {/* Help Modal */}
+      {isHelpModalOpen && (
+        <Modal
+          isOpen={isHelpModalOpen}
+          onRequestClose={handleHelpClose}
+          contentLabel="Help"
+          className="help-modal"
+          overlayClassName="overlay"
+        >
+          {helpPage === 0 ? 
+            <h2>投稿の仕方</h2> :
+            <h2>投稿完了</h2>
+          }
+          <img
+            src={helpPage === 0 ? 'images/img1.png' : 'images/img2.png'}
+            alt="Tutorial"
+            className="help-image"
+          />
+          <button
+            className="intro-close-button"
+            onClick={goToNextHelpPage}
+          >
+            次へ
+          </button>
+          <button
+            className="intro-close-button"
+            onClick={handleHelpClose}
+          >
+            閉じる
+          </button>
+        </Modal>
+      )}
 
       {/* Intro Modal */}
       {showIntroModal && (
