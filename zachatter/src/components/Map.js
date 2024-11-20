@@ -37,9 +37,13 @@ const Map = ({ onLocationSelect, posts, setUserLocation, mapRef }) => {
             touchZoomRotate: false, // Disable pinch zoom and rotation gestures
           });
 
-          // Apply localization for Japanese
+          // Apply Japanese localization
           mapRef.current.on('style.load', () => {
             mapRef.current.setLayoutProperty('country-label', 'text-field', [
+              'get',
+              'name_ja',
+            ]);
+            mapRef.current.setLayoutProperty('place-label', 'text-field', [
               'get',
               'name_ja',
             ]);

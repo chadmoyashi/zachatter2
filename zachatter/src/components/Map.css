@@ -40,7 +40,9 @@
     font-size: 14px;
     cursor: pointer;
     text-align: center;
-    margin-top: 10px;
+    margin-top: 20px;
     border: none;
     transition: background-color 0.3s;
+    background-color: #8a2be2; /* Match theme color */
+    color: white;
   }

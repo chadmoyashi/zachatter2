@@ -48,7 +48,7 @@ function App() {
   const handleFileChange = (e) => {
     if (e.target.files.length > 0) {
       setFile(e.target.files[0]);
-      setUploadStatus('Uploaded!');
+      setUploadStatus('アップロード完了!');
     } else {
       setUploadStatus('');
     }
