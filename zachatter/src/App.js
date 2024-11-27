@@ -16,7 +16,7 @@ function App() {
   const [previousLocation, setPreviousLocation] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
-  const [helpPage, setHelpPage] = useState(0); // Track the current help page
+  const [helpPage, setHelpPage] = useState(0);
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState('');
   const [allPosts, setAllPosts] = useState([]);
@@ -67,7 +67,7 @@ function App() {
       let photoURL = null;
 
       if (file) {
-        const fileRef = ref(storage, `photos/${file.name}`);
+        const fileRef = ref(storage, `photos/${file.name}-${Date.now()}`);
         await uploadBytes(fileRef, file);
         photoURL = await getDownloadURL(fileRef);
       }
@@ -96,8 +96,11 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = onSnapshot(collection(db, 'posts'), (snapshot) => {
-      const allPosts = snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-      setAllPosts(allPosts);
+      const fetchedPosts = snapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setAllPosts(fetchedPosts);
     });
 
     return () => unsubscribe();
@@ -107,11 +110,11 @@ function App() {
     if (!userLocation || !allPosts.length) return;
 
     const now = Timestamp.now().toDate();
-    const filtered = allPosts.filter((post) => {
+    const updatedFilteredPosts = allPosts.filter((post) => {
       const postTime = post.createdAt?.toDate();
       const timeDiff = (now - postTime) / (1000 * 60);
 
-      if (timeDiff > 60) return false;
+      if (timeDiff > 150) return false;
 
       const distance = calculateDistance(
         userLocation[1],
@@ -123,7 +126,7 @@ function App() {
       return distance <= 0.2;
     });
 
-    setFilteredPosts(filtered);
+    setFilteredPosts(updatedFilteredPosts);
   }, [userLocation, allPosts]);
 
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -150,7 +153,7 @@ function App() {
   };
 
   const goToNextHelpPage = () => {
-    setHelpPage((prev) => (prev + 1) % 2); // Cycles between page 0 and 1
+    setHelpPage((prev) => (prev + 1) % 2);
   };
 
   return (
@@ -191,10 +194,11 @@ function App() {
           className="help-modal"
           overlayClassName="overlay"
         >
-          {helpPage === 0 ? 
-            <h2>投稿の仕方</h2> :
+          {helpPage === 0 ? (
+            <h2>投稿の仕方</h2>
+          ) : (
             <h2>投稿完了</h2>
-          }
+          )}
           <img
             src={helpPage === 0 ? 'images/img1.png' : 'images/img2.png'}
             alt="Tutorial"
@@ -283,7 +287,7 @@ function App() {
             checked={isEventBooth}
             onChange={(e) => setIsEventBooth(e.target.checked)}
           />
-          <label htmlFor="event-booth-checkbox">店舗またはイベントを運営しています</label>
+          <label htmlFor="event-booth-checkbox">運営者が投稿する場合はここにチェック</label>
         </div>
         <button onClick={handlePost} className="post-button">投稿</button>
         <button onClick={closeModal} className="cancel-button">戻る</button>
